@@ -1,46 +1,56 @@
 from tkinter import *
 from core.menu import MenuFunctions
 from core.main import MainMethods
+from core.definitions import *
 
-# ------------------------- Definitions -----------------------
-title = "Analizador de Metadatos MD47"
-tSelectFile = "Seleccione un Archivo para iniciar..."
-
-cPrimary = "#00838f"
-cDark = "#005662"
-cLight = "#4fb3bf"
-tPrimary = "#ffffff"
-tDark = "#ffffff"
-tLight = "#000000"
-cWhite = "#ffffff"
-cBlack = "#000000"
-cLightGray = "#e0e0e0"
-cDarkGray = "#616161"
 
 file = ""
+file_prop = {}
+file_meta = {}
 
 # ------------------------- Local Methods Definitions -----------------------
-def selectFile():
+
+def select_file():
     fileSelected = MainMethods.browse_file()
     if fileSelected == "":
-        MenuFunctions.errorFileEmpty()
-        #buttonSelect.config(text="Select")
-        lblBottom.config(text=tSelectFile)
+        MenuFunctions.error_file_empty()
+        # buttonSelect.config(text="Select")
+        lblBottom.config(text=tdSelectFile)
+        textResult.delete(1.0, END)
     else:
-        tSF = "File: "+fileSelected
-        file = fileSelected
-        lblBottom.config(text=tSF)
-        #buttonSelect.config(text="Clear")
+        textResult.delete(1.0, END)
+        if MainMethods.check_file_ext(fileSelected):
+            tSF = tFile+": " + str(fileSelected)
+            file = fileSelected
+            lblBottom.config(text=tSF)
+            file_prop = MainMethods.get_file_properties(fileSelected)
+            for key, value in file_prop.items():
+                textResult.insert(INSERT, str(key)+': '+str(value)+'\n')
+            textResult.insert(INSERT, tdPressAnalyze)
+            file_meta = MainMethods.get_image_metadata(fileSelected)
+            for key, value in file_meta.items():
+                textResult.insert(INSERT, str(key)+': '+str(value)+'\n')
+            # buttonSelect.config(text="Clear")
+        else:
+            MenuFunctions.error_file_empty()
+            # buttonSelect.config(text="Select")
+            lblBottom.config(text=tdSelectFile)
+            textResult.delete(1.0, END)
 
-def exitApp():
-    if MenuFunctions.exitApp():
+def clean_file():
+    print(file_prop)
+    MainMethods.clean_image_metadata(file_prop["File Name"], file_prop["Extension"])
+
+def exit_app():
+    if MenuFunctions.exit_app():
         vP.quit()
+
 
 # ------------------------- Main Window -----------------------
 vP = Tk()
 vP.geometry("800x600")
 vP.title(title)
-vP.iconbitmap("img/JTNEGRO.ico")
+vP.iconbitmap(tIconBitMap)
 vP.resizable(0, 0)
 # ------------------------- Main Frame -------------------------
 mF = Frame()
@@ -51,28 +61,28 @@ menuBar = Menu(vP)
 vP.config(menu=menuBar)
 
 fileMenu = Menu(menuBar, tearoff=0)
-fileMenu.add_command(label="Select New", command=selectFile)
+fileMenu.add_command(label=tSelect, command=select_file)
 fileMenu.add_separator()
-fileMenu.add_command(label="Save Result")
-fileMenu.add_command(label="Clear Results")
+fileMenu.add_command(label=tSave)
+fileMenu.add_command(label=tClean)
 fileMenu.add_separator()
-fileMenu.add_command(label="Exit", command=exitApp)
+fileMenu.add_command(label=tExit, command=exit_app)
 
 metaDataMenu = Menu(menuBar, tearoff=0)
-metaDataMenu.add_command(label="Analyze")
-metaDataMenu.add_command(label="Clean")
+metaDataMenu.add_command(label=tAnalyze)
+metaDataMenu.add_command(label=tClean)
 
 wordListMenu = Menu(menuBar, tearoff=0)
-wordListMenu.add_command(label="Edit")
-wordListMenu.add_command(label="Update")
+wordListMenu.add_command(label=tEdit)
+wordListMenu.add_command(label=tUpdate)
 
 aboutMenu = Menu(menuBar, tearoff=0)
 aboutMenu.add_command(command=MenuFunctions.about)
 
-menuBar.add_cascade(label="File", menu=fileMenu)
-menuBar.add_cascade(label="Metadata", menu=metaDataMenu)
-menuBar.add_cascade(label="Word-List", menu=wordListMenu)
-menuBar.add_cascade(label="About", menu=aboutMenu)
+menuBar.add_cascade(label=tFile, menu=fileMenu)
+menuBar.add_cascade(label=tMetadata, menu=metaDataMenu)
+menuBar.add_cascade(label=tWordList, menu=wordListMenu)
+menuBar.add_cascade(label=tAbout, menu=aboutMenu)
 # ------------------------- End Menu bar ----------------------
 
 # ------------------------- Label Title  ----------------------
@@ -84,34 +94,29 @@ lblTitle.config(fon=("Verdana", 24), fg=tPrimary, bg=cPrimary, width="60", heigh
 textResult = Text(mF, width=60, height=20, relief=FLAT)
 textResult.place(relx=.5, rely=.4, anchor="center")
 textResult.config(fon=("Verdana", 16), fg=cBlack, bg=cWhite)
-#textResult.insert(INSERT, "Hello World")
-#textResult.config(state=DISABLED)
+# textResult.insert(INSERT, "Hello World")
+# textResult.config(state=DISABLED)
 
 # ------------------------- Actions Buttons  ----------------------
-buttonSelect = Button(mF, text="Selecionar", command=selectFile)
+buttonSelect = Button(mF, text=tSelect, command=select_file)
 buttonSelect.place(relx=.4, rely=.75)
 buttonSelect.config(fon=("Verdana", 20), fg="green", highlightbackground=cLightGray, bg=cLightGray,
                     width="10", height="2", bd=0)
 
-buttonAnalize = Button(mF, text="Analizar")
+buttonAnalize = Button(mF, text=tAnalyze)
 buttonAnalize.place(relx=.6, rely=.75)
 buttonAnalize.config(fon=("Verdana", 20), fg="blue", highlightbackground=cLightGray, bg=cLightGray,
-                    width="10", height="2", bd=0)
+                     width="10", height="2", bd=0)
 
-buttonClean = Button(mF, text="Limpiar")
+buttonClean = Button(mF, text=tClean, command=clean_file)
 buttonClean.place(relx=.8, rely=.75)
 buttonClean.config(fon=("Verdana", 20), fg="red", highlightbackground=cLightGray, bg=cLightGray,
-                    width="10", height="2", bd=0)
+                   width="10", height="2", bd=0)
 
 # ------------------------- Label Bottom  ----------------------
-lblBottom = Label(mF, text=tSelectFile)
+lblBottom = Label(mF, text=tdSelectFile)
 lblBottom.place(relx=.5, rely=0.95, anchor="center")
 lblBottom.config(fon=("Verdana", 18), fg=cWhite, bg=cLight, width="90", height="3")
-
-
-
-
-
 
 # ------------------------- End Window -------------------------
 vP.mainloop()

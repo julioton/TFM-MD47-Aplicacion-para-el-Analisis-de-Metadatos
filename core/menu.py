@@ -13,9 +13,9 @@ class MenuFunctions:
                             + "estudiante Ing. Julio Chinchilla Moya.")
 
     @staticmethod
-    def exitApp():
+    def exit_app():
         return messagebox.askyesno("¿Cerrar Aplicación?", "¿Realmente desea cerrar la aplicación completamente?")
 
     @staticmethod
-    def errorFileEmpty():
+    def error_file_empty():
         messagebox.showerror("¡Ocurrió un Error!", "Debe de seleccionar un archivo válido.")

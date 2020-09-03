@@ -9,5 +9,10 @@ https://material.io/resources/color/#!/?view.left=0&view.right=0&primary.color=0
 
 https://www.udemy.com/course/curso-completo-de-python-desde-cero-hasta-experto/learn/lecture/13562306#overview
 
+http://effbot.org/zone/python-fileinfo.htm
+
+https://pypi.org/project/ExifRead/#description
+
+https://www.geeksforgeeks.org/image-based-steganography-using-python/
 
 
