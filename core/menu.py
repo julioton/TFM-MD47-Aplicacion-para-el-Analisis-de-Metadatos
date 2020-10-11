@@ -19,3 +19,11 @@ class MenuFunctions:
     @staticmethod
     def error_file_empty():
         messagebox.showerror("¡Ocurrió un Error!", "Debe de seleccionar un archivo válido.")
+
+    @staticmethod
+    def info_file_clean():
+        messagebox.showinfo("Información", "Se ha finalizado el proceso de limpieza de metadatos.")
+
+    @staticmethod
+    def info_file_clean_failed():
+        messagebox.showinfo("¡Ocurrió un Error!", "Ha fallado el proceso de limpieza de metadatos, no es posible limpiar el archivo seleccionado.")

@@ -15,4 +15,21 @@ https://pypi.org/project/ExifRead/#description
 
 https://www.geeksforgeeks.org/image-based-steganography-using-python/
 
+https://gitlab.com/nxl4/pdf-metadata
 
+https://www.sans.org/reading-room/whitepapers/forensics/pdf-metadata-extraction-python-38800
+
+
+
+
+ver
+https://gitlab.com/nxl4/pdf-metadata/-/tree/master
+https://realpython.com/pdf-python/
+https://dzone.com/articles/extracting-pdf-metadata-and-text-with-python
+https://www.sans.org/reading-room/whitepapers/forensics/pdf-metadata-extraction-python-38800
+https://www.blog.pythonlibrary.org/2018/04/10/extracting-pdf-metadata-and-text-with-python/
+https://pypi.org/project/PyPDF2/
+https://github.com/mstamy2/PyPDF2
+https://github.com/euske/pdfminer/
+https://github.com/CrossRef/pdfextract
+https://www.giac.org/paper/gpyc/400/pdf-metadata-extraction-python/170602

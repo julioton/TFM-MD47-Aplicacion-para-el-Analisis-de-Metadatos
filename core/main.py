@@ -1,10 +1,21 @@
 import os, sys
 import time
+import exifread
+import pprint
+import PyPDF2
+
+
 from stat import *
 from tkinter import filedialog
+from tkinter import *
 from PIL import Image
 from PIL.ExifTags import TAGS
-import exifread
+from PyPDF2 import PdfFileWriter, PdfFileReader
+from PyPDF2.generic import NameObject, createStringObject
+
+from core import pdf_metadata
+from core.definitions import tdPressAnalyze
+
 
 
 class MainMethods:
@@ -14,12 +25,9 @@ class MainMethods:
         file_types = [
             ("all files", "*.*")
         ]
-
         filename = filedialog.askopenfilename(initialdir="/",
                                               title="Select a File",
                                               filetypes=file_types)
-        # ("all files", "*.*")
-        # label_file_explorer.configure(text="File Opened: " + filename)
         return filename
 
     @staticmethod
@@ -34,6 +42,11 @@ class MainMethods:
             return False
 
     @staticmethod
+    def print_results(output_item, input_data):
+        for key, value in input_data.items():
+            output_item.insert(INSERT, str(key) + ': ' + str(value) + '\n')
+
+    @staticmethod
     def get_file_properties(filename):
         file_prop = {}
         info = []
@@ -46,7 +59,7 @@ class MainMethods:
             file_prop["Time Last Access"] = time.asctime(time.localtime(info[ST_ATIME]))
             file_prop["Time Modified"] = time.asctime(time.localtime(info[ST_MTIME]))
         except Exception as e:
-            print("Failed to get information ", str(filename), "Exception: ", str(e))
+            print("Failed ", str(filename), "Exception: ", str(e))
         # else:
         # print(info)
         # print(file_prop)
@@ -55,45 +68,184 @@ class MainMethods:
         return file_prop
 
     @staticmethod
+    def get_metadata(filename, fileprops):
+        if filename.endswith('.png') | filename.endswith('.gif') | filename.endswith('.JPG') \
+                | filename.endswith('.jpg') | filename.endswith('.jpeg'):
+            return MainMethods.get_image_metadata(filename)
+        elif filename.endswith('.pdf') | filename.endswith('.PDF'):
+            return MainMethods.get_pdf_metadata(filename, fileprops)
+
+    @staticmethod
     def get_image_metadata(filename):
         file_prop = {}
         result = {}
-        if filename.endswith('.png') | filename.endswith('.gif') | filename.endswith('.JPG') \
-                | filename.endswith('.jpg') | filename.endswith('.jpeg'):
-            try:
-                # exif_data = Image.open(filename)._getexif()
-                # for key, value in exif_data.items():
-                #    file_prop.update({TAGS.get(key): value})
-                #    #print('%s = %s ' % (TAGS.get(key), value))
-
-                f = open(filename, 'rb')
-                res = exifread.process_file(f)
-                file_prop.update({'Metadata Type': 'EXIF'})
+        try:
+            '''
+            exif_data = Image.open(filename)._getexif()
+            if exif_data:
+                print("Exif data")
+                for key, value in exif_data.items():
+                    file_prop.update({TAGS.get(key): value})
+                    #print('%s = %s ' % (TAGS.get(key), value))
+            '''
+            f = open(filename, 'rb')
+            res = exifread.process_file(f)
+            if res:
+                print("Exif read data")
+                file_prop.update({tdPressAnalyze + 'Metadata Type ': 'EXIF\n'})
                 for tag in res.keys():
                     if tag not in ('JPEGThumbnail', 'TIFFThumbnail', 'Filename', 'EXIF MakerNote'):
                         file_prop.update({tag: res[tag]})
                         # print("%s = %s" % (tag, res[tag]))
-
+            if file_prop:
                 for key, value in file_prop.items():
                     if value not in result.values():
                         result[key] = value
 
-            except Exception as e:
-                print("Failed to get information ", str(filename), "Exception: ", str(e))
+            if int(len(result.items())) == 0:
+                result.update({'\nMetadata Type EXIF': 'No Metadata to show'})
+
+        except Exception as e:
+            print("Failed ", str(filename), "Exception: ", str(e))
         return result
+
+    @staticmethod
+    def get_pdf_metadata(filename, fileprops):
+        result_py_pdf = {}
+        result_py_pdf_xmp = {}
+        result_pdf_meta = {}
+        result = {}
+        result.update({tdPressAnalyze + 'Metadata Type ': 'PDF\n'})
+
+        try:
+            filepdf1 = PyPDF2.PdfFileReader(open(filename, 'rb'))
+            result_py_pdf = filepdf1.getDocumentInfo()
+        except Exception as e:
+            print("Failed PyPDF2 getDocumentInfo", str(filename), "Exception: ", str(e))
+
+        try:
+            filepdf2 = PyPDF2.PdfFileReader(open(filename, 'rb'))
+            result_py_pdf_xmp = filepdf2.getXmpMetadata()
+        except Exception as e:
+            print("Failed PyPDF2 getXmpMetadata", str(filename), "Exception: ", str(e))
+
+        try:
+            arg_list = [filename, '', '']
+            result_pdf_meta = pdf_metadata.input_main(arg_list)
+        except Exception as e:
+            print("Failed pdf_meta", str(filename), "Exception: ", str(e))
+
+        if result_py_pdf:
+            count = 0
+            try:
+                for key, value in result_py_pdf.items():
+                    ++count
+                    if value not in result.values():
+                        result[key] = value
+            except Exception as e:
+                print("Failed for result_py_pdf", str(filename), "Exception: ", str(e))
+
+        if result_py_pdf_xmp:
+            print(result_py_pdf_xmp)
+            count = 0
+            try:
+                for key, value in result_py_pdf_xmp.items():
+                    ++count
+                    if value not in result.values():
+                        result[key] = value
+            except Exception as e:
+                print("Failed for result_py_pdf_xmp", str(filename), "Exception: ", str(e))
+
+        if result_pdf_meta:
+            count = 0
+            try:
+                for key, value in result_pdf_meta.items():
+                    ++count
+                    if value not in result.values():
+                        result[key] = value
+            except Exception as e:
+                print("Failed for result_pdf_meta", str(filename), "Exception: ", str(e))
+
+        if int(len(result.items())) == 0:
+            result.update({'\nMetadata Type PDF': 'No Metadata to show'})
+
+        return result
+
+    @staticmethod
+    def clean_metadata(simplefilename, extension):
+        filename = str(simplefilename) + str(extension)
+        if filename.endswith('.png') | filename.endswith('.gif') | filename.endswith('.JPG') \
+                | filename.endswith('.jpg') | filename.endswith('.jpeg'):
+            return MainMethods.clean_image_metadata(simplefilename, extension)
+        elif filename.endswith('.pdf') | filename.endswith('.PDF'):
+            return MainMethods.clean_pdf_metadata(simplefilename, extension)
 
     @staticmethod
     def clean_image_metadata(simplefilename, extension):
         filename = str(simplefilename) + str(extension)
-        if filename.endswith('.png') | filename.endswith('.gif') | filename.endswith('.JPG') \
-                | filename.endswith('.jpg') | filename.endswith('.jpeg'):
+        try:
+            image = Image.open(filename)
+            data = list(image.getdata())
+            image_without_exif = Image.new(image.mode, image.size)
+            image_without_exif.putdata(data)
+            image_without_exif.save(str(simplefilename) + '_clean_' + str(extension))
+            return str(simplefilename) + '_clean_' + str(extension)
+        except Exception as e:
+            print("Failed ", str(filename), "Exception: ", str(e))
+        return False
+
+    @staticmethod
+    def clean_pdf_metadata(simplefilename, extension):
+        filename = str(simplefilename) + str(extension)
+        try:
+
+            OUTPUT = simplefilename + str('_CLEAN_.pdf')
+            INPUTS = [filename, ]
+            inputs = {}
+            output = PdfFileWriter()
+
+            infoDict = output._info.getObject()
+            infoDict.update({
+                NameObject('/Title'): createStringObject(u'title'),
+                NameObject('/Producer'): createStringObject(u'producer'),
+                NameObject('/Author'): createStringObject(u'author'),
+                NameObject('/Subject'): createStringObject(u'subject'),
+                NameObject('/Creator'): createStringObject(u'MD47')
+            })
+
             try:
-                image = Image.open(filename)
-                data = list(image.getdata())
-                image_without_exif = Image.new(image.mode, image.size)
-                image_without_exif.putdata(data)
-                image_without_exif.save(str(simplefilename) + '_clean_' + str(extension))
-                return True
+                inputs = [PdfFileReader(open(i, "rb")) for i in INPUTS]
             except Exception as e:
-                print("Failed to get information ", str(filename), "Exception: ", str(e))
+                print("Failed PdfFileReader", str(filename), "Exception: ", str(e))
+
+            print()
+            if len(inputs) > 0:
+                try:
+                    for input in inputs:
+                        for page in range(input.getNumPages()):
+                            output.addPage(input.getPage(page))
+                except Exception as e:
+                    print("Failed for input", str(filename), "Exception: ", str(e))
+
+                try:
+                    outputStream = open(OUTPUT, 'wb')
+                    output.write(outputStream)
+                    outputStream.close()
+                except Exception as e:
+                    print("Failed outputStream", str(filename), "Exception: ", str(e))
+            else:
+                return False
+            return OUTPUT
+
+            """
+            image = Image.open(filename)
+            data = list(image.getdata())
+            image_without_exif = Image.new(image.mode, image.size)
+            image_without_exif.putdata(data)
+            image_without_exif.save(str(simplefilename) + '_clean_' + str(extension))
+            return str(simplefilename) + '_clean_' + str(extension)"""
+
+
+        except Exception as e:
+            print("Failed ", str(filename), "Exception: ", str(e))
         return False
