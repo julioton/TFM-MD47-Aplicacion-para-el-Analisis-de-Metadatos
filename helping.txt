@@ -19,7 +19,9 @@ https://gitlab.com/nxl4/pdf-metadata
 
 https://www.sans.org/reading-room/whitepapers/forensics/pdf-metadata-extraction-python-38800
 
-
+https://github.com/decalage2/oletools
+https://github.com/decalage2/oletools/wiki
+https://www.decalage.info/en/python/oletimes
 
 
 ver
