@@ -16,7 +16,6 @@ def select_file(fileSelected=False):
         textResult.insert(INSERT, tWelcome + '\n')
     if fileSelected == "":
         MenuFunctions.error_file_empty()
-        # buttonSelect.config(text="Select")
         lblBottom.config(text=tdSelectFile)
         textResult.delete(1.0, END)
         textResult.insert(INSERT, tWelcome + '\n')
@@ -43,17 +42,24 @@ def select_file(fileSelected=False):
 
 
 def clean_file():
-    lblBottom.config(text=tdActionCleaning)
-    textResult.delete(1.0, END)
-    textResult.insert(INSERT, tdActionCleaning + '\n')
-    file_clean = MainMethods.clean_metadata(file_prop["File Name"], file_prop["Extension"])
-    if file_clean:
-        textResult.insert(INSERT, tdActionCleaningOK + '\n')
-        select_file(file_clean)
-        MenuFunctions.info_file_clean()
+    if file_prop:
+        lblBottom.config(text=tdActionCleaning)
+        textResult.delete(1.0, END)
+        textResult.insert(INSERT, tdActionCleaning + '\n')
+        file_clean = MainMethods.clean_metadata(file_prop["File Name"], file_prop["Extension"])
+        if file_clean:
+            textResult.insert(INSERT, tdActionCleaningOK + '\n')
+            select_file(file_clean)
+            MenuFunctions.info_file_clean()
+        else:
+            textResult.insert(INSERT, tdActionCleaningFailed + '\n')
+            MenuFunctions.info_file_clean_failed()
     else:
-        textResult.insert(INSERT, tdActionCleaningFailed + '\n')
-        MenuFunctions.info_file_clean_failed()
+        MenuFunctions.error_file_empty()
+        # buttonSelect.config(text="Select")
+        lblBottom.config(text=tdSelectFile)
+        textResult.delete(1.0, END)
+        textResult.insert(INSERT, tWelcome + '\n')
 
 
 def exit_app():

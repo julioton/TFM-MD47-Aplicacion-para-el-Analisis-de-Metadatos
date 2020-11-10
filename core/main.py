@@ -1,23 +1,18 @@
 import os
 import time
-from distutils.command.config import config
 from stat import *
 from tkinter import *
 from tkinter import filedialog
 
 import PyPDF2
 import exifread
-import libxmp
 import olefile
 import docx
-import zipfile
-import lxml.etree
 import openpyxl
 
 from PIL import Image
 from PyPDF2 import PdfFileWriter, PdfFileReader
 from PyPDF2.generic import NameObject, createStringObject
-from libxmp import XMPFiles, consts
 
 from core.definitions import tdPressAnalyze
 from lib import pdf_metadata
