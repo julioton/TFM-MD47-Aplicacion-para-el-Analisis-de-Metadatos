@@ -13,17 +13,21 @@ file_meta = {}
 def select_file(fileSelected=False):
     if not fileSelected:
         fileSelected = MainMethods.browse_file()
+        textResult.insert(INSERT, tWelcome + '\n')
     if fileSelected == "":
         MenuFunctions.error_file_empty()
         # buttonSelect.config(text="Select")
         lblBottom.config(text=tdSelectFile)
         textResult.delete(1.0, END)
+        textResult.insert(INSERT, tWelcome + '\n')
     else:
         textResult.delete(1.0, END)
+        textResult.insert(INSERT, tWelcome + '\n')
         if MainMethods.check_file_ext(fileSelected):
             global file
             global file_prop
             global file_meta
+            textResult.delete(1.0, END)
             tSF = tFile + ": " + str(fileSelected)
             file = fileSelected
             lblBottom.config(text=tSF)
@@ -130,4 +134,9 @@ lblBottom.place(relx=.5, rely=0.95, anchor="center")
 lblBottom.config(fon=("Verdana", 18), fg=cWhite, bg=cLight, width="90", height="3")
 
 # ------------------------- End Window -------------------------
+
+
+textResult.insert(INSERT, tWelcome + '\n')
+
 vP.mainloop()
+

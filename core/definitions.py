@@ -1,6 +1,8 @@
 # ------------------------- Definitions -----------------------
-title = 'Analizador de Metadatos MD47'
+title = 'Limpiador de Metadatos MD47'
 tIconBitMap = 'img/JTNEGRO.ico'
+tWelcome = '\n\nMD47 Aplicación para Limpiar Metadatos \n\nTrabajo Fin de Máster\n\nJulio Gerardo Chinchilla Moya\n\nMáster Universitario en ' \
+           'Ciberseguridad\n\nUniversidad de Alcalá de Henares, Madrid, España\n\n2019-2020'
 tdSelectFile = 'Seleccione un Archivo para iniciar...'
 tdPressAnalyze = '' #'\n*** Presione Analizar para continuar con el Análisis de Metadatos ***\n\n'
 tdActionCleaning = 'Limpiando Archivo, por favor espere...'
