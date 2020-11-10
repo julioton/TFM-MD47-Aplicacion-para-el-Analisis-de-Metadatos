@@ -2,7 +2,7 @@
 title = 'Analizador de Metadatos MD47'
 tIconBitMap = 'img/JTNEGRO.ico'
 tdSelectFile = 'Seleccione un Archivo para iniciar...'
-tdPressAnalyze = '\n*** Presione Analizar para continuar con el Análisis de Metadatos ***\n\n'
+tdPressAnalyze = '' #'\n*** Presione Analizar para continuar con el Análisis de Metadatos ***\n\n'
 tdActionCleaning = 'Limpiando Archivo, por favor espere...'
 tdActionCleaningOK = 'Se limpió correctamente...'
 tdActionCleaningFailed = 'Ocurrió un error al limpiar, seleccione otro archivo.'

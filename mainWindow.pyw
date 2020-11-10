@@ -110,15 +110,15 @@ textResult.config(fon=("Verdana", 16), fg=cBlack, bg=cWhite)
 
 # ------------------------- Actions Buttons  ----------------------
 buttonSelect = Button(mF, text=tSelect, command=select_file)
-buttonSelect.place(relx=.4, rely=.75)
+buttonSelect.place(relx=.6, rely=.75)
 buttonSelect.config(fon=("Verdana", 20), fg="green", highlightbackground=cLightGray, bg=cLightGray,
                     width="10", height="2", bd=0)
-
+'''
 buttonAnalyze = Button(mF, text=tAnalyze)
 buttonAnalyze.place(relx=.6, rely=.75)
 buttonAnalyze.config(fon=("Verdana", 20), fg="blue", highlightbackground=cLightGray, bg=cLightGray,
                      width="10", height="2", bd=0)
-
+'''
 buttonClean = Button(mF, text=tClean, command=clean_file)
 buttonClean.place(relx=.8, rely=.75)
 buttonClean.config(fon=("Verdana", 20), fg="red", highlightbackground=cLightGray, bg=cLightGray,

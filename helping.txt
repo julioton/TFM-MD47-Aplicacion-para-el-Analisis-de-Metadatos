@@ -24,6 +24,14 @@ https://github.com/decalage2/oletools/wiki
 https://www.decalage.info/en/python/oletimes
 
 
+https://python-docx.readthedocs.io/en/latest/
+https://python-docx.readthedocs.io/en/latest/dev/analysis/features/coreprops.html
+
+https://openpyxl.readthedocs.io/en/stable/
+
+https://python-xmp-toolkit.readthedocs.io/en/latest/installation.html#exempi
+
+
 ver
 https://gitlab.com/nxl4/pdf-metadata/-/tree/master
 https://realpython.com/pdf-python/
@@ -35,3 +43,6 @@ https://github.com/mstamy2/PyPDF2
 https://github.com/euske/pdfminer/
 https://github.com/CrossRef/pdfextract
 https://www.giac.org/paper/gpyc/400/pdf-metadata-extraction-python/170602
+
+
+

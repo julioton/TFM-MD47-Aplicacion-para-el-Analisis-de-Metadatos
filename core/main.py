@@ -1,19 +1,26 @@
 import os
 import time
+from distutils.command.config import config
 from stat import *
 from tkinter import *
 from tkinter import filedialog
-from docx import Document
 
 import PyPDF2
 import exifread
+import libxmp
+import olefile
+import docx
+import zipfile
+import lxml.etree
+import openpyxl
+
 from PIL import Image
 from PyPDF2 import PdfFileWriter, PdfFileReader
 from PyPDF2.generic import NameObject, createStringObject
-from oletools import olemeta
-import olefile
-from lib import pdf_metadata
+from libxmp import XMPFiles, consts
+
 from core.definitions import tdPressAnalyze
+from lib import pdf_metadata
 
 
 class MainMethods:
@@ -72,11 +79,14 @@ class MainMethods:
             return MainMethods.get_image_metadata(filename)
         elif filename.endswith('.pdf') | filename.endswith('.PDF'):
             return MainMethods.get_pdf_metadata(filename, fileprops)
-        elif filename.endswith('.xlsx') | filename.endswith('.XLSX') | filename.endswith('.XLS') \
-                | filename.endswith('.xls') | filename.endswith('.doc') | filename.endswith('.DOC') \
-                | filename.endswith('.docx') | filename.endswith('.DOCX') \
-                | filename.endswith('.docm') | filename.endswith('.dotx'):
-            return MainMethods.get_office_metadata(filename, fileprops)
+        elif filename.endswith('.XLS') | filename.endswith('.xls') | \
+                filename.endswith('.doc') | filename.endswith('.DOC') \
+                | filename.endswith('.docm'):
+            return MainMethods.get_office_old_metadata(filename, fileprops)
+        elif filename.endswith('.docx') | filename.endswith('.DOCX'):
+            return MainMethods.get_office_docx_metadata(filename, fileprops)
+        elif filename.endswith('.xlsx') | filename.endswith('.XLSX'):
+            return MainMethods.get_office_xlsx_metadata(filename, fileprops)
         else:
             return False
 
@@ -177,15 +187,15 @@ class MainMethods:
         return result
 
     @staticmethod
-    def get_office_metadata(filename, fileprops):
+    def get_office_old_metadata(filename, fileprops):
         file_prop = {}
         result_metadata = {}
         result = {}
         try:
             f = open(filename, 'rb')
-            print(filename)
             ole = olefile.OleFileIO(filename)
             result_metadata = ole.get_metadata()
+
 
             if result_metadata:
                 count = 0
@@ -219,6 +229,93 @@ class MainMethods:
         return result
 
     @staticmethod
+    def get_office_docx_metadata(filename, fileprops):
+        file_prop = {}
+        result_metadata = {}
+        core_properties = {}
+        result = {}
+        try:
+            document = docx.Document(docx=filename)
+            core_properties = document.core_properties
+            if core_properties:
+                try:
+                    result_metadata.update({'author':core_properties.author})
+                    result_metadata.update({'created':core_properties.created})
+                    result_metadata.update({'last_modified_by':core_properties.last_modified_by})
+                    result_metadata.update({'last_printed':core_properties.last_printed})
+                    result_metadata.update({'modified':core_properties.modified})
+                    result_metadata.update({'revision':core_properties.revision})
+                    result_metadata.update({'title':core_properties.title})
+                    result_metadata.update({'category':core_properties.category})
+                    result_metadata.update({'comments':core_properties.comments})
+                    result_metadata.update({'identifier':core_properties.identifier})
+                    result_metadata.update({'keywords':core_properties.keywords})
+                    result_metadata.update({'language':core_properties.language})
+                    result_metadata.update({'subject':core_properties.subject})
+                    result_metadata.update({'version':core_properties.version})
+                    result_metadata.update({'content_status':core_properties.content_status})
+                except Exception as e:
+                    print("Failed for result_metadata", str(filename), "Exception: ", str(e))
+                count = 0
+                for key, value in result_metadata.items():
+                    ++count
+                    if value not in result.values() and value != '':
+                        result[key] = value
+            if int(len(result.items())) == 0:
+                result.update({'\nMetadata Type DOCX': 'No Metadata to show'})
+
+            return result
+
+        except Exception as e:
+            print("Failed ", str(filename), "Exception: ", str(e))
+            result.update({'\nFailed': str(e)})
+        return result
+
+    @staticmethod
+    def get_office_xlsx_metadata(filename, fileprops):
+        file_prop = {}
+        result_metadata = {}
+        core_properties = {}
+        result = {}
+        try:
+            fh = openpyxl.load_workbook(filename)
+            core_properties = fh.properties  # To get old properties
+            if core_properties:
+                try:
+                    result_metadata.update({'creator': core_properties.creator})
+                    result_metadata.update({'title': core_properties.title})
+                    result_metadata.update({'description': core_properties.description})
+                    result_metadata.update({'subject': core_properties.subject})
+                    result_metadata.update({'identifier': core_properties.identifier})
+                    result_metadata.update({'language': core_properties.language})
+                    result_metadata.update({'created': core_properties.created})
+                    result_metadata.update({'modified': core_properties.modified})
+                    result_metadata.update({'lastModifiedBy': core_properties.lastModifiedBy})
+                    result_metadata.update({'category': core_properties.category})
+                    result_metadata.update({'contentStatus': core_properties.contentStatus})
+                    result_metadata.update({'version': core_properties.version})
+                    result_metadata.update({'revision': core_properties.revision})
+                    result_metadata.update({'keywords': core_properties.keywords})
+                    result_metadata.update({'lastPrinted': core_properties.lastPrinted})
+
+                except Exception as e:
+                    print("Failed for result_metadata", str(filename), "Exception: ", str(e))
+                count = 0
+                for key, value in result_metadata.items():
+                    ++count
+                    if value not in result.values() and value != '':
+                        result[key] = value
+            if int(len(result.items())) == 0:
+                result.update({'\nMetadata Type XLSX': 'No Metadata to show'})
+
+            return result
+
+        except Exception as e:
+            print("Failed ", str(filename), "Exception: ", str(e))
+            result.update({'\nFailed': str(e)})
+        return result
+
+    @staticmethod
     def clean_metadata(simplefilename, extension):
         filename = str(simplefilename) + str(extension)
         if filename.endswith('.png') | filename.endswith('.gif') | filename.endswith('.JPG') \
@@ -226,11 +323,16 @@ class MainMethods:
             return MainMethods.clean_image_metadata(simplefilename, extension)
         elif filename.endswith('.pdf') | filename.endswith('.PDF'):
             return MainMethods.clean_pdf_metadata(simplefilename, extension)
-        elif filename.endswith('.xlsx') | filename.endswith('.XLSX') | filename.endswith('.XLS') \
-                | filename.endswith('.xls') | filename.endswith('.doc') | filename.endswith('.DOC') \
-                | filename.endswith('.docx') | filename.endswith('.DOCX') \
-                | filename.endswith('.docm') | filename.endswith('.dotx'):
+        elif filename.endswith('.docx') | filename.endswith('.DOCX'):
+            return MainMethods.clean_office_docx_metadata(simplefilename, extension)
+        elif filename.endswith('.xlsx') | filename.endswith('.XLSX'):
+            return MainMethods.clean_office_xlsx_metadata(simplefilename, extension)
+        elif filename.endswith('.XLS') | filename.endswith('.xls') \
+                | filename.endswith('.doc') | filename.endswith('.DOC') \
+                | filename.endswith('.docm'):
             return MainMethods.clean_office_metadata(simplefilename, extension)
+        else:
+            return False
 
     @staticmethod
     def clean_image_metadata(simplefilename, extension):
@@ -297,18 +399,53 @@ class MainMethods:
     def clean_office_metadata(simplefilename, extension):
         filename = str(simplefilename) + str(extension)
         try:
+            f = open(filename, 'rb')
+            ole = olefile.OleFileIO(filename, write_mode=True)
+            data = ole.openstream('WordDocument').read()
+            '''data = data.replace(b'author', b'MD47')
+            ole.write_sect(0x17, b'MD47')'''
+            ole.write_stream('WordDocument', data)
+            ole.close()
+            print("Failed - It's not possible to change metadata of old OLE files, Please save this with new Office App version.")
+            return False
+            '''str(simplefilename) + '_clean_failed_' + str(extension)'''
+        except Exception as e:
+            print("Failed ", str(filename), "Exception: ", str(e))
+        return False
 
-            document = Document(filename)
+    @staticmethod
+    def clean_office_docx_metadata(simplefilename, extension):
+        filename = str(simplefilename) + str(extension)
+        try:
+            document = docx.Document(docx=filename)
             core_properties = document.core_properties
-            print(core_properties)
-            meta_fields = ["author", "category", "comments", "content_status", "created", "identifier", "keywords",
-                           "language", "revision", "subject", "title", "version"]
+            meta_fields = ["author", "category", "comments", "content_status", "identifier", "keywords",
+                           "language", "subject", "title", "version", "last_modified_by"]
             for meta_field in meta_fields:
-                setattr(core_properties, meta_field, "")
+                setattr(core_properties, meta_field, "MD47")
             document.save(str(simplefilename) + '_clean_' + str(extension))
 
             return str(simplefilename) + '_clean_' + str(extension)
         except Exception as e:
-            print("Failed 99 ", str(filename), "Exception: ", str(e))
+            print("Failed ", str(filename), "Exception: ", str(e))
         return False
 
+    @staticmethod
+    def clean_office_xlsx_metadata(simplefilename, extension):
+        filename = str(simplefilename) + str(extension)
+        try:
+            document = openpyxl.load_workbook(filename)
+            document.properties.creator = "MD47"
+            document.properties.title = "MD47"
+            document.properties.description = "MD47"
+            document.properties.subject = "MD47"
+            document.properties.lastModifiedBy = "MD47"
+            document.properties.category = "MD47"
+            document.properties.keywords = "MD47"
+
+            document.save(str(simplefilename) + '_clean_' + str(extension))
+
+            return str(simplefilename) + '_clean_' + str(extension)
+        except Exception as e:
+            print("Failed ", str(filename), "Exception: ", str(e))
+        return False
